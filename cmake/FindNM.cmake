@@ -16,7 +16,7 @@ pkg_check_modules(PC_NM QUIET libnm)
 
 find_library(NM_LIBRARY
     NAMES libnm.so
-    PATHS ${PC_NM_LIBRARY_DIRS})
+    HINTS ${PC_NM_LIBDIR} ${PC_NM_LIBRARY_DIRS})
 
 find_path(NM_INCLUDE_DIR
     NAMES NetworkManager.h
