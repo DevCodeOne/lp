@@ -6,9 +6,7 @@ Setting up environment
 Setting up toolchain on host pc
 --
 
-Install `arm-linux-gnueabihf-gcc` from aur
-Also install sshfs and add your user to the group fuse with `sudo usermod -a -G fuse username`
-if the group doesn't exist add it first with `sudo groupadd fuse` and then repeat the last command.
+Get the prebuilt crosstools-ng toolchains for armv7l-hard-float and extract it somewhere in your home directory
 
 Synchronizing libraries with host pc and raspberry pi
 ---

@@ -20,7 +20,7 @@ find_library(JSONCPP_LIBRARY
 
 find_path(JSONCPP_INCLUDE_DIR
     NAMES json.h
-    PATH_SUFFIXES jsoncpp/json
+    PATH_SUFFIXES json
     PATHS ${PC_JSONCPP_INCLUDE_DIRS}
     )
 
