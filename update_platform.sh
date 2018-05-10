@@ -1,4 +1,3 @@
 #!/bin/bash
 
-rsync -rl alarm@alarmpi:/opt platform
-rsync -rl alarm@alarmpi:/usr platform
+rsync -rlp alarm@alarmpi:/opt alarm@alarmpi:/usr platform

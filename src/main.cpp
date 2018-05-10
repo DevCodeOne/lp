@@ -32,7 +32,14 @@ int main() {
     // }
 
     // wpa_ctrl_close(ctrl);
-    auto devices = network::wpa_manager::get_devices(network::wpa_manager::default_control_location);
+    auto interface_paths = network::wpa_manager::get_interfaces(network::wpa_manager::default_control_location);
+
+    for (auto &interface_path : interface_paths) {
+        auto interface = interface_path.open_interface();
+
+        interface.status();
+        interface.enable_network(network::wpa_network_id(0));
+    }
 
     return EXIT_SUCCESS;
 }
