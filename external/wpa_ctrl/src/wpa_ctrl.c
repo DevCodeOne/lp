@@ -31,7 +31,7 @@
 #endif /* CONFIG_CTRL_IFACE_UDP_IPV6 */
 
 #include "wpa_ctrl.h"
-#include "common.h"
+#include "wpa_common.h"
 
 
 #if defined(CONFIG_CTRL_IFACE_UNIX) || defined(CONFIG_CTRL_IFACE_UDP)

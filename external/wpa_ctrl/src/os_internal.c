@@ -21,7 +21,7 @@
 #include <sys/wait.h>
 
 #undef OS_REJECT_C_LIB_FUNCTIONS
-#include "common.h"
+#include "wpa_common.h"
 
 void os_sleep(os_time_t sec, os_time_t usec)
 {
