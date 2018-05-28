@@ -3,7 +3,7 @@ project(lp C CXX)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 17)
 
-add_compile_options(-Wall -Wextra -Wpedantic -Wno-psabi -g)
+add_compile_options(-Wall -Wextra -Wpedantic -Wno-variadic-macros -Wno-psabi -g)
 add_definitions(-DSPDLOG_ENABLE_SYSLOG=1)
 
 set(SPDLOG_BUILD_TESTING OFF CACHE BOOL "Disable spdlog tests")

@@ -7,6 +7,7 @@
 
 int main(int argc, char *argv[]) {
     auto logger = logger::get();
+    bcm_host::initialize();
 
     char *env = getenv("VC_DISPLAY");
 
