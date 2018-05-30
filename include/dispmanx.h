@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 
 #include "bcm_host_wrapper.h"
@@ -33,6 +34,72 @@ class dispmanx_rect {
     uint32_t m_off_y;
     bool m_changed;
 };
+
+template<typename color_type, typename size_type = size_t>
+class dispmanx_pixmap {
+   public:
+    dispmanx_pixmap(size_type width, size_type height);
+
+    const color_type *operator[](size_type index) const;
+    color_type *operator[](size_type index);
+
+    const color_type *data() const;
+
+    size_type width() const;
+    size_type pitch() const;
+    size_type height() const;
+
+   private:
+    const size_type m_width;
+    const size_type m_height;
+    const size_type m_pitch;
+    std::unique_ptr<color_type[]> m_data;
+
+    template<size_type align_to>
+    static constexpr size_type align(const size_type length);
+};
+
+template<typename color_type, typename size_type>
+dispmanx_pixmap<color_type, size_type>::dispmanx_pixmap(size_type width, size_type height)
+    : m_width(width), m_height(height), m_pitch(align<16>(width)) {
+    m_data = std::make_unique<color_type[]>(m_pitch * m_height);
+}
+
+template<typename color_type, typename size_type>
+template<size_type align_to>
+constexpr size_type dispmanx_pixmap<color_type, size_type>::align(const size_type length) {
+    return (length + (align_to - 1)) & (~(align_to - 1));
+}
+
+template<typename color_type, typename size_type>
+size_type dispmanx_pixmap<color_type, size_type>::width() const {
+    return m_width;
+}
+
+template<typename color_type, typename size_type>
+size_type dispmanx_pixmap<color_type, size_type>::height() const {
+    return m_height;
+}
+
+template<typename color_type, typename size_type>
+size_type dispmanx_pixmap<color_type, size_type>::pitch() const {
+    return m_pitch;
+}
+
+template<typename color_type, typename size_type>
+const color_type *dispmanx_pixmap<color_type, size_type>::operator[](size_type index) const {
+    return m_data.get() + index * pitch();
+}
+
+template<typename color_type, typename size_type>
+color_type *dispmanx_pixmap<color_type, size_type>::operator[](size_type index) {
+    return m_data.get() + index * pitch();
+}
+
+template<typename color_type, typename size_type>
+const color_type *dispmanx_pixmap<color_type, size_type>::data() const {
+    return m_data.get();
+}
 
 enum struct orientation {
     NO_ROTATION = DISPMANX_NO_ROTATE,
@@ -68,9 +135,10 @@ class dispmanx_resource {
     static std::optional<dispmanx_resource> create_resource(const VC_IMAGE_TYPE_T &image_type,
                                                             uint32_t width, uint32_t height);
     template<typename T>
-    void write_data(VC_IMAGE_TYPE_T src_type, T *src_address, const dispmanx_rect &region);
+    void write_data(VC_IMAGE_TYPE_T src_type, const dispmanx_pixmap<T> &pixmap,
+                    const dispmanx_rect &region);
     template<typename T>
-    void read_data(const dispmanx_rect &region, T *dst_address);
+    void read_data(const dispmanx_rect &region, dispmanx_pixmap<T> &pixmap);
 
     const dispmanx_rect &dimensions() const;
 
@@ -88,16 +156,15 @@ class dispmanx_resource {
 };
 
 template<typename T>
-void dispmanx_resource::write_data(VC_IMAGE_TYPE_T src_type, T *src_address,
+void dispmanx_resource::write_data(VC_IMAGE_TYPE_T src_type, const dispmanx_pixmap<T> &pixmap,
                                    const dispmanx_rect &region) {
-    vc_dispmanx_resource_write_data(m_handle, src_type, sizeof(T) * region.width(), (void *)src_address, &region.rect());
+    vc_dispmanx_resource_write_data(m_handle, src_type, pixmap.pitch() * sizeof(T),
+                                    (void *)pixmap.data(), &region.rect());
 }
 
 template<typename T>
-void dispmanx_resource::read_data(const dispmanx_rect &region, T *dst_address) {
-    uint32_t pitch = region.width() * sizeof(T);
-
-    vc_dispmanx_resource_read_data(m_handle, &region.rect(), (void *)dst_address, pitch);
+void dispmanx_resource::read_data(const dispmanx_rect &region, dispmanx_pixmap<T> &pixmap) {
+    vc_dispmanx_resource_read_data(m_handle, &region.rect(), (void *)pixmap.data(), pixmap.pitch());
 }
 
 class dispmanx_element_handle {
@@ -145,6 +212,8 @@ class dispmanx_display;
 
 class dispmanx_update {
    public:
+    dispmanx_update(const dispmanx_update &) = delete;
+    dispmanx_update(dispmanx_update &&);
     ~dispmanx_update();
 
     std::optional<dispmanx_element_handle> add_element(

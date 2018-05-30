@@ -14,7 +14,7 @@ dispmanx_rect &dispmanx_rect::width(uint32_t width) {
 }
 
 dispmanx_rect &dispmanx_rect::height(uint32_t height) {
-    m_width = height;
+    m_height = height;
     update_rect();
 
     return *this;
@@ -126,6 +126,8 @@ std::optional<dispmanx_element_handle> dispmanx_update::add_element(
     const dispmanx_rect &src_region, const dispmanx_protection &protection,
     const dispmanx_alpha &alpha_wrapper, const dispmanx_clamp &clamp,
     const dispmanx_transform &transform) {
+    // So clamp is not marked as unused
+    (void) clamp;
     VC_DISPMANX_ALPHA_T alpha{alpha_wrapper.flags(), alpha_wrapper.opacity(),
                               alpha_wrapper.mask() ? alpha_wrapper.mask()->handle() : 0};
     DISPMANX_ELEMENT_HANDLE_T handle = vc_dispmanx_element_add(
@@ -143,8 +145,13 @@ std::optional<dispmanx_element_handle> dispmanx_update::add_element(
 dispmanx_update::dispmanx_update(DISPMANX_UPDATE_HANDLE_T &update, dispmanx_display &display)
     : m_update(update), m_display(display) {}
 
+dispmanx_update::dispmanx_update(dispmanx_update &&other)
+    : m_update(other.m_update), m_display(other.m_display), m_submitted(other.m_submitted) {
+    other.m_update = 0;
+}
+
 dispmanx_update::~dispmanx_update() {
-    if (!m_submitted) {
+    if (!m_submitted && m_update != 0) {
         submit_update();
     }
 }

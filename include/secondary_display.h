@@ -19,4 +19,5 @@ class secondary_display : public QWidget {
     std::unique_ptr<dispmanx_display> m_display = nullptr;
     std::unique_ptr<dispmanx_resource> m_resource = nullptr;
     std::unique_ptr<dispmanx_element_handle> m_element = nullptr;
+    dispmanx_pixmap<int32_t> m_pixmap;
 };
