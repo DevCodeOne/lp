@@ -31,24 +31,27 @@ link_directories(${PC_BCM_HOST_LIBRARY_DIRS})
 
 file(GLOB ALL_SOURCE_FILES "src/*cpp")
 qt5_wrap_cpp(secondary_display_moc include/secondary_display.h)
-add_executable(lp ${ALL_SOURCE_FILES} ${secondary_display_moc})
+qt5_wrap_cpp(secondary_display_moc include/qrwidget.h)
+add_executable(lp ${ALL_SOURCE_FILES} ${secondary_display_moc} ${qrwidget_moc})
 
 target_include_directories(lp PRIVATE include)
 # target_include_directories(lp PRIVATE ${NM_INCLUDE_DIRS})
 target_include_directories(lp PRIVATE ${CMAKE_SYSROOT}/usr/include/c++/7.3.1)
 
 
-target_link_libraries(lp spdlog)
-target_link_libraries(lp udevpp)
+target_link_libraries(lp PRIVATE spdlog)
+target_link_libraries(lp PRIVATE udevpp)
 # target_link_libraries(lp PRIVATE wpa_ctrl)
-target_link_libraries(lp stdc++fs)
-target_link_libraries(lp pthread)
+target_link_libraries(lp PRIVATE stdc++fs)
+target_link_libraries(lp PRIVATE pthread)
+target_link_libraries(lp PRIVATE ${JSONCPP_LIBRARIES})
+target_link_libraries(lp PRIVATE ${QRENCODE_LIBRARIES})
 
-target_link_libraries(lp ${PC_BCM_HOST_LIBRARIES})
+target_link_libraries(lp PRIVATE ${PC_BCM_HOST_LIBRARIES})
 target_include_directories(lp PRIVATE ${PC_BCM_HOST_INCLUDE_DIRS})
 target_compile_options(lp PRIVATE ${PC_BCM_CFLAGS_OTHER})
 
-target_link_libraries(lp Qt5::Gui Qt5::Core Qt5::Widgets)
+target_link_libraries(lp PRIVATE Qt5::Gui Qt5::Core Qt5::Widgets)
 
 add_custom_command(TARGET lp POST_BUILD
     COMMAND cat compile_commands.json | sed -e 's/--sysroot=[^\ ]*//p' > new_compile_commands.json
