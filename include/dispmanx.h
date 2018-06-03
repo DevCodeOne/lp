@@ -50,9 +50,9 @@ class dispmanx_pixmap {
     size_type height() const;
 
    private:
-    const size_type m_width;
-    const size_type m_height;
-    const size_type m_pitch;
+    size_type m_width;
+    size_type m_height;
+    size_type m_pitch;
     std::unique_ptr<color_type[]> m_data;
 
     template<size_type align_to>

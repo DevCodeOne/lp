@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
 
     secondary_display display(20);
-    display.setMinimumSize(1280, 720);
+    display.setMinimumSize(800, 480);
     display.showFullScreen();
 
     return a.exec();

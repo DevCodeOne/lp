@@ -6,8 +6,8 @@
 #include "secondary_display.h"
 
 secondary_display::secondary_display(int refresh_rate, QWidget *parent)
-    : QWidget(parent), m_pixmap(1280, 720) {
-    auto display = dispmanx_display::open_display((dispmanx_display::ids)6);
+    : QWidget(parent), m_pixmap(16, 16), m_qrwidget("Hello World fjdslfgsdjfsdklgsdj") {
+    auto display = dispmanx_display::open_display(dispmanx_display::ids::FORCE_LCD);
 
     if (!display) {
         logger::get()->critical("Couldn't open display");
@@ -18,7 +18,9 @@ secondary_display::secondary_display(int refresh_rate, QWidget *parent)
     dispmanx_modeinfo mode = m_display->current_mode();
 
     logger::get()->info("modeinfo : width={}, height={}", mode.width(), mode.height());
-    auto resource = dispmanx_resource::create_resource(VC_IMAGE_RGBA32, 1280, 720);
+    auto resource =
+        dispmanx_resource::create_resource(VC_IMAGE_RGBA32, mode.width(), mode.height());
+    m_pixmap = decltype(m_pixmap)(mode.width(), mode.height());
 
     if (!resource) {
         logger::get()->critical("Couldn't create resource");
@@ -27,30 +29,34 @@ secondary_display::secondary_display(int refresh_rate, QWidget *parent)
 
     m_resource = std::make_unique<dispmanx_resource>(std::move(*resource));
 
+    QVBoxLayout *layout = new QVBoxLayout();
+    layout->addWidget(&m_qrwidget);
+    setLayout(layout);
+
     startTimer(1000 / refresh_rate);
 }
 
 void secondary_display::paintEvent(QPaintEvent *) {
-    QPainter painter(this);
+    // QPainter painter(this);
 
-    painter.fillRect(0, 0, 1280, 720, QColor(255, 0, 20, 255));
-    painter.drawText(100, 100, "Hello World");
+    // painter.fillRect(0, 0, 1280, 720, QColor(255, 0, 20, 255));
+    // painter.drawText(100, 100, "Hello World");
 }
 
 void secondary_display::timerEvent(QTimerEvent *) { update_display(); }
 
 void secondary_display::update_display() {
     // TODO add check if content has changed
-    dispmanx_rect rect(0, 0, 1280, 720);
+    dispmanx_rect rect(m_resource->dimensions());
 
     QImage content = grab().toImage();
     QImage result = content.convertToFormat(QImage::Format::Format_RGBA8888);
 
-    for (int i = 0; i < 720; ++i) {
+    for (size_t i = 0; i < rect.height(); ++i) {
         const int32_t *data = (const int32_t *)result.constScanLine(i);
 
         int32_t *const pixel_iterator = m_pixmap[i];
-        for (int j = 0; j < 1280; ++j) {
+        for (size_t j = 0; j < rect.width(); ++j) {
             pixel_iterator[j] = data[j];
         }
     }

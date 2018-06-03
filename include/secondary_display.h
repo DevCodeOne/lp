@@ -3,8 +3,10 @@
 #include <memory>
 
 #include <QWidget>
+#include <QVBoxLayout>
 
 #include "dispmanx.h"
+#include "qrwidget.h"
 
 class secondary_display : public QWidget {
     Q_OBJECT
@@ -20,4 +22,5 @@ class secondary_display : public QWidget {
     std::unique_ptr<dispmanx_resource> m_resource = nullptr;
     std::unique_ptr<dispmanx_element_handle> m_element = nullptr;
     dispmanx_pixmap<int32_t> m_pixmap;
+    qrwidget m_qrwidget;
 };
