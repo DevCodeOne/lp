@@ -7,6 +7,7 @@ add_compile_options(-Wall -Wextra -Wpedantic -Wno-variadic-macros -Wno-psabi -g)
 add_definitions(-DSPDLOG_ENABLE_SYSLOG=1)
 
 set(SPDLOG_BUILD_TESTING OFF CACHE BOOL "Disable spdlog tests")
+set(CXXOPTS_BUILD_EXAMPLES OFF CACHE BOOL "Disable cxxopts examples")
 set(UDEVPP_BUILD_EXAMPLES OFF CACHE BOOL "Disable udevpp examples")
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -14,6 +15,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_subdirectory(external/spdlog)
 add_subdirectory(external/udevpp)
+add_subdirectory(external/cxxopts)
 # add_subdirectory(external/wpa_ctrl)
 
 file(GLOB Qt_bin /usr/bin)
@@ -42,6 +44,7 @@ target_include_directories(lp PRIVATE ${CMAKE_SYSROOT}/usr/include/c++/7.3.1)
 target_link_libraries(lp PRIVATE spdlog)
 target_link_libraries(lp PRIVATE udevpp)
 # target_link_libraries(lp PRIVATE wpa_ctrl)
+target_link_libraries(lp PRIVATE cxxopts)
 target_link_libraries(lp PRIVATE stdc++fs)
 target_link_libraries(lp PRIVATE pthread)
 target_link_libraries(lp PRIVATE ${JSONCPP_LIBRARIES})
