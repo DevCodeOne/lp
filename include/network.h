@@ -1,17 +1,6 @@
 #pragma once
 
-#ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 600
-#endif
-
-#ifndef _POSIX_C_SOURCE
-#define _POSIX_C_SOURCE 200809L
-#endif
-
-// clang-format off
-#include <unistd.h>
-#include <limits.h>
-// clang-format on
+#include "posix.h"
 
 #include <experimental/filesystem>
 #include <map>
@@ -39,6 +28,8 @@ class network_control {
     const fs::path &config_path() const;
 
     static inline constexpr char hostapd_default_conf_path[] = "/etc/hostapd/hostapd.conf";
+    static inline constexpr char hostapd_default_wpa_conf_path[] = "/etc/hostapd/hostapd.wpa_psk";
+    static inline constexpr char hostapd_default_log_file[] = "/tmp/lp_network.log";
 
    private:
     static bool lock_file(const fs::path &config_path);

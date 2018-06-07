@@ -1,6 +1,10 @@
-#include <string.h>
-#include <signal.h>
+#include "posix.h"
 
+#include <signal.h>
+#include <string.h>
+#include <wait.h>
+
+#include "logger.h"
 #include "network.h"
 
 std::optional<network_control> network_control::open_control(const fs::path &config_path) {
@@ -54,7 +58,30 @@ bool network_control::start_network() {
         m_hostapd_pid = ret;
     } else if (ret == 0) {
         // Set streams so the output can be written to the logs
-        char *arguments[] = {strdup(hostapd_path), strdup(hostapd_argument), nullptr};
+        int log_fd =
+            open(hostapd_default_log_file, O_RDWR | O_CLOEXEC | O_CREAT, S_IRUSR | S_IWUSR | S_IROTH);
+
+        if (log_fd != -1) {
+            if (ftruncate(log_fd, 0) == -1) {
+                logger::get()->warn("Couldn't truncate the log file");
+            }
+
+            int ret = dup2(log_fd, STDOUT_FILENO);
+
+            if (ret == -1) {
+                logger::get()->warn("Couldn't change the fd of stdout to point to log_fd");
+            }
+            ret = dup2(log_fd, STDERR_FILENO);
+
+            if (ret == -1) {
+                logger::get()->warn("Couldn't change the fd of stderr to point to log_fd");
+            }
+        } else {
+            logger::get()->warn("Couldn't create logging file for hostapd to write in");
+        }
+
+        char *arguments[] = {strdup(hostapd_path), strdup(hostapd_argument), strdup("-dd"),
+                             nullptr};
 
         if (execv(hostapd_path, arguments) == -1) {
             // Error executing hostapd
@@ -65,7 +92,23 @@ bool network_control::start_network() {
 }
 
 bool network_control::apply_config() {
-    return kill(m_hostapd_pid, SIGHUP) != -1;
+    logger::get()->info("Sending signal to {}", m_hostapd_pid);
+    int result = kill(m_hostapd_pid, SIGTERM);
+
+    if (result == -1) {
+        logger::get()->critical("Couldn't terminate hostapd process");
+
+        return false;
+    }
+
+    int status = 0;
+    result = waitpid(m_hostapd_pid, &status, 0);
+
+    if (result == -1) {
+        logger::get()->critical("Couldn't wait for the termination of hostapd");
+    }
+
+    return start_network();
 }
 
 bool network_control::lock_file(const fs::path &config_path) {

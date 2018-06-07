@@ -6,7 +6,7 @@
 #include "secondary_display.h"
 
 secondary_display::secondary_display(int refresh_rate, QWidget *parent)
-    : QWidget(parent), m_pixmap(16, 16), m_qrwidget("Hello World fjdslfgsdjfsdklgsdj") {
+    : QTabWidget(parent), m_pixmap(16, 16), m_qrwidget("Hello World fjdslfgsdjfsdklgsdj"), m_button("TestButton", nullptr) {
     auto display = dispmanx_display::open_display(dispmanx_display::ids::FORCE_LCD);
 
     if (!display) {
@@ -28,19 +28,18 @@ secondary_display::secondary_display(int refresh_rate, QWidget *parent)
     }
 
     m_resource = std::make_unique<dispmanx_resource>(std::move(*resource));
+    m_button.setMaximumHeight(40);
+    m_button.setMaximumWidth(200);
 
-    QVBoxLayout *layout = new QVBoxLayout();
-    layout->addWidget(&m_qrwidget);
-    setLayout(layout);
+    addTab(&m_qrwidget, "Control Tab");
+    addTab(&m_button, "Test Tab");
 
     startTimer(1000 / refresh_rate);
 }
 
 void secondary_display::paintEvent(QPaintEvent *) {
-    // QPainter painter(this);
-
-    // painter.fillRect(0, 0, 1280, 720, QColor(255, 0, 20, 255));
-    // painter.drawText(100, 100, "Hello World");
+    QPainter painter(this);
+    painter.fillRect(0, 0, width(), height(), QColor(0, 0, 0, 255));
 }
 
 void secondary_display::timerEvent(QTimerEvent *) { update_display(); }

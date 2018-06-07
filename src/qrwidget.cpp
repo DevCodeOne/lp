@@ -5,7 +5,11 @@
 #include "logger.h"
 #include "qrwidget.h"
 
-qrwidget::qrwidget(const std::string &message) : m_message(message) { update_qrcode(); }
+qrwidget::qrwidget(const std::string &message) : m_message(message) {
+    update_qrcode();
+    setMaximumWidth(m_side_length * 10);
+    setMaximumHeight(m_side_length * 10);
+}
 
 void qrwidget::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
@@ -13,7 +17,7 @@ void qrwidget::paintEvent(QPaintEvent *event) {
                      QBrush(QColor("white"), Qt::BrushStyle::SolidPattern));
     QBrush brush = QBrush(QColor("black"), Qt::BrushStyle::SolidPattern);
 
-    int square_size = 10;
+    int square_size = std::floor(std::min(width(), height()) / m_side_length);
 
     for (int i = 0; i < m_side_length; ++i) {
         for (int j = 0; j < m_side_length; ++j) {
