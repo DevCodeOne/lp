@@ -6,7 +6,10 @@
 #include "secondary_display.h"
 
 secondary_display::secondary_display(int refresh_rate, QWidget *parent)
-    : QTabWidget(parent), m_pixmap(16, 16), m_qrwidget("Hello World fjdslfgsdjfsdklgsdj"), m_button("TestButton", nullptr) {
+    : QTabWidget(parent),
+      m_pixmap(16, 16),
+      m_qrwidget("Hello World fjdslfgsdjfsdklgsdj"),
+      m_button("TestButton", nullptr) {
     auto display = dispmanx_display::open_display(dispmanx_display::ids::FORCE_LCD);
 
     if (!display) {

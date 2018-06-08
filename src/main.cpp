@@ -2,9 +2,9 @@
 
 #include <QApplication>
 
-#include "secondary_display.h"
-#include "network.h"
 #include "logger.h"
+#include "network.h"
+#include "secondary_display.h"
 
 int main(int argc, char *argv[]) {
     auto logger = logger::get();

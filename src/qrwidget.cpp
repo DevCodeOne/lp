@@ -7,8 +7,8 @@
 
 qrwidget::qrwidget(const std::string &message) : m_message(message) {
     update_qrcode();
-    setMaximumWidth(m_side_length * 10);
-    setMaximumHeight(m_side_length * 10);
+    setMaximumWidth(m_side_length * square_size);
+    setMaximumHeight(m_side_length * square_size);
 }
 
 void qrwidget::paintEvent(QPaintEvent *event) {

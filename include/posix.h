@@ -12,5 +12,3 @@
 #include <unistd.h>
 #include <limits.h>
 // clang-format on
-
-
