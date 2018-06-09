@@ -41,53 +41,61 @@ secondary_display::secondary_display(int refresh_rate, QWidget *parent)
 }
 
 void secondary_display::paintEvent(QPaintEvent *) {
+    if (!m_is_grabbing) {
+        m_content_has_changed = true;
+    }
+
     QPainter painter(this);
     painter.fillRect(0, 0, width(), height(), QColor(0, 0, 0, 255));
+    m_is_grabbing = false;
+}
+
+QImage secondary_display::pixels() {
+    m_is_grabbing = true;
+    QImage content = grab().toImage();
+    return content.convertToFormat(QImage::Format::Format_RGBA8888);
 }
 
 void secondary_display::timerEvent(QTimerEvent *) { update_display(); }
 
 void secondary_display::update_display() {
     // TODO add check if content has changed
-    dispmanx_rect rect(m_resource->dimensions());
+    if (m_content_has_changed) {
+        dispmanx_rect rect(m_resource->dimensions());
 
-    QImage content = grab().toImage();
-    QImage result = content.convertToFormat(QImage::Format::Format_RGBA8888);
+        auto screen_contents = pixels();
 
-    for (size_t i = 0; i < rect.height(); ++i) {
-        const int32_t *data = (const int32_t *)result.constScanLine(i);
-
-        int32_t *const pixel_iterator = m_pixmap[i];
-        for (size_t j = 0; j < rect.width(); ++j) {
-            pixel_iterator[j] = data[j];
+        for (size_t i = 0; i < rect.height(); ++i) {
+            memcpy(m_pixmap[i], screen_contents.constScanLine(i), sizeof(int32_t) * rect.width());
         }
-    }
 
-    m_resource->write_data(VC_IMAGE_RGBA32, m_pixmap, rect);
+        m_resource->write_data(VC_IMAGE_RGBA32, m_pixmap, rect);
 
-    auto update = m_display->start_update(0);
+        auto update = m_display->start_update(0);
 
-    if (!update) {
-        logger::get()->warn("Couldn't update display");
-        return;
-    }
-
-    auto dimensions = m_resource->dimensions();
-    if (!m_element) {
-        auto element_handle = update->add_element(
-            2000, dimensions, *m_resource, dimensions, dispmanx_protection::NONE,
-            dispmanx_alpha(DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS, 255, nullptr), dispmanx_clamp(),
-            dispmanx_transform());
-
-        if (!element_handle) {
-            logger::get()->critical("Couldn't add element to update");
+        if (!update) {
+            logger::get()->warn("Couldn't update display");
             return;
         }
 
-        m_element = std::make_unique<dispmanx_element_handle>(std::move(*element_handle));
+        auto dimensions = m_resource->dimensions();
+        if (!m_element) {
+            auto element_handle = update->add_element(
+                2000, dimensions, *m_resource, dimensions, dispmanx_protection::NONE,
+                dispmanx_alpha(DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS, 255, nullptr),
+                dispmanx_clamp(), dispmanx_transform());
+
+            if (!element_handle) {
+                logger::get()->critical("Couldn't add element to update");
+                return;
+            }
+
+            m_element = std::make_unique<dispmanx_element_handle>(std::move(*element_handle));
+        }
+
+        update->change_element_source(*m_element, *m_resource);
+
+        update->submit_update();
+        m_content_has_changed = false;
     }
-
-    update->change_element_source(*m_element, *m_resource);
-
-    update->submit_update();
 }
