@@ -11,7 +11,7 @@
 class secondary_display : public QTabWidget {
     Q_OBJECT
    public:
-    secondary_display(int refresh_rate, QWidget *parent = nullptr);
+    secondary_display(int refresh_rate);
     void update_display();
 
    private:
@@ -22,7 +22,7 @@ class secondary_display : public QTabWidget {
     std::unique_ptr<dispmanx_display> m_display = nullptr;
     std::unique_ptr<dispmanx_resource> m_resource = nullptr;
     std::unique_ptr<dispmanx_element_handle> m_element = nullptr;
-    bool m_content_has_changed = true;
+    bool m_update_needed = true;
     bool m_is_grabbing = false;
     dispmanx_pixmap<int32_t> m_pixmap;
     qrwidget m_qrwidget;

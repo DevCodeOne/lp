@@ -5,8 +5,8 @@
 #include "logger.h"
 #include "secondary_display.h"
 
-secondary_display::secondary_display(int refresh_rate, QWidget *parent)
-    : QTabWidget(parent),
+secondary_display::secondary_display(int refresh_rate)
+    : QTabWidget(nullptr),
       m_pixmap(16, 16),
       m_qrwidget("Hello World fjdslfgsdjfsdklgsdj"),
       m_button("TestButton", nullptr) {
@@ -20,10 +20,13 @@ secondary_display::secondary_display(int refresh_rate, QWidget *parent)
     m_display = std::make_unique<dispmanx_display>(std::move(*display));
     dispmanx_modeinfo mode = m_display->current_mode();
 
+    setMinimumSize(QSize(mode.width(), mode.height()));
+    showFullScreen();
+
     logger::get()->info("modeinfo : width={}, height={}", mode.width(), mode.height());
     auto resource =
         dispmanx_resource::create_resource(VC_IMAGE_RGBA32, mode.width(), mode.height());
-    m_pixmap = decltype(m_pixmap)(mode.width(), mode.height());
+    m_pixmap = dispmanx_pixmap<int32_t>(mode.width(), mode.height());
 
     if (!resource) {
         logger::get()->critical("Couldn't create resource");
@@ -42,25 +45,24 @@ secondary_display::secondary_display(int refresh_rate, QWidget *parent)
 
 void secondary_display::paintEvent(QPaintEvent *) {
     if (!m_is_grabbing) {
-        m_content_has_changed = true;
+        m_update_needed = true;
     }
 
     QPainter painter(this);
     painter.fillRect(0, 0, width(), height(), QColor(0, 0, 0, 255));
-    m_is_grabbing = false;
 }
 
 QImage secondary_display::pixels() {
     m_is_grabbing = true;
     QImage content = grab().toImage();
+    m_is_grabbing = false;
     return content.convertToFormat(QImage::Format::Format_RGBA8888);
 }
 
 void secondary_display::timerEvent(QTimerEvent *) { update_display(); }
 
 void secondary_display::update_display() {
-    // TODO add check if content has changed
-    if (m_content_has_changed) {
+    if (m_update_needed) {
         dispmanx_rect rect(m_resource->dimensions());
 
         auto screen_contents = pixels();
@@ -96,6 +98,6 @@ void secondary_display::update_display() {
         update->change_element_source(*m_element, *m_resource);
 
         update->submit_update();
-        m_content_has_changed = false;
+        m_update_needed = false;
     }
 }

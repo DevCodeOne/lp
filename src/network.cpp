@@ -34,6 +34,7 @@ network_control::network_control(network_control &&other)
 }
 
 network_control::~network_control() {
+    terminate_network();
     if (m_config_path != "") {
         unlock_file(m_config_path);
     }
@@ -114,14 +115,11 @@ void network_control::set_value(const std::string &key, const std::string &value
 }
 
 bool network_control::apply_config() {
+    int result = 0;
     logger::get()->info("Writing config to disk");
     write_values_to_config();
-    logger::get()->info("Sending signal to {}", m_hostapd_pid);
-    int result = kill(m_hostapd_pid, SIGTERM);
 
-    if (result == -1) {
-        logger::get()->critical("Couldn't terminate hostapd process");
-
+    if (!terminate_network()) {
         return false;
     }
 
@@ -133,6 +131,21 @@ bool network_control::apply_config() {
     }
 
     return start_network();
+}
+
+bool network_control::terminate_network() {
+    if (m_hostapd_pid) {
+        logger::get()->info("Sending signal to {}", m_hostapd_pid);
+        int result = kill(m_hostapd_pid, SIGTERM);
+
+        if (result == -1) {
+            logger::get()->critical("Couldn't terminate hostapd process");
+
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool network_control::read_values_from_config() {

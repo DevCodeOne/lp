@@ -47,6 +47,7 @@ class network_control {
      * configuration has been written
      */
     bool apply_config();
+    bool terminate_network();
 
     const fs::path &config_path() const;
 

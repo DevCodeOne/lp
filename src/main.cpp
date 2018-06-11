@@ -4,16 +4,14 @@
 
 #include "logger.h"
 #include "network.h"
+#include "automounter.h"
 #include "secondary_display.h"
 
 int main(int argc, char *argv[]) {
     auto logger = logger::get();
     bcm_host::initialize();
 
-    char *env = getenv("VC_DISPLAY");
-
-    logger->info("{}", env);
-
+    automounter mounter;
     auto network = network_control::open_control(network_control::hostapd_default_conf_path);
 
     if (!network) {
@@ -21,11 +19,11 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
+    mounter.start();
+
     QApplication a(argc, argv);
 
-    secondary_display display(20);
-    display.setMinimumSize(800, 480);
-    display.showFullScreen();
+    secondary_display display(50);
 
     return a.exec();
 }
