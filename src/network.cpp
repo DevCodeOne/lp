@@ -5,6 +5,8 @@
 #include <wait.h>
 
 #include <fstream>
+#include <sstream>
+#include <random>
 #include <string>
 
 #include "logger.h"
@@ -16,6 +18,20 @@ std::optional<network_control> network_control::open_control(const fs::path &con
     }
 
     return network_control(config_path);
+}
+
+std::string network_control::random_password(size_t length) {
+    std::random_device device;
+    std::mt19937 generator(device());
+
+    std::uniform_int_distribution<> dis(0, sizeof(wpa_passphrase_allowed_chars) - 1);
+    std::ostringstream result;
+
+    for (size_t i = 0; i < length; ++i) {
+        result << wpa_passphrase_allowed_chars[dis(generator)];
+    }
+
+    return result.str();
 }
 
 network_control::network_control(const fs::path &config_path)
@@ -181,6 +197,7 @@ bool network_control::read_values_from_config() {
 bool network_control::write_values_to_config() {
     std::ofstream stream(m_config_path, std::ios_base::out | std::ios_base::trunc);
 
+    logger::get()->info("Hostapd config : ");
     for (const auto &value : m_values) {
         logger::get()->info("{} = {}", value.first, value.second);
         stream << value.first << "=" << value.second << '\n';

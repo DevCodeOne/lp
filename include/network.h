@@ -9,6 +9,8 @@
 
 namespace fs = std::experimental::filesystem;
 
+/** \brief This class controls the hostapd process that it starts
+ */
 class network_control {
    public:
     /** \brief Constructs a network_control class, also locks the configuration file
@@ -17,6 +19,9 @@ class network_control {
      * network_control instance
      */
     static std::optional<network_control> open_control(const fs::path &config_path);
+    /** \brief Generates a random password which can be used as wpa_passphrase for the hotspot
+     */
+    static std::string random_password(size_t length);
 
     network_control(const network_control &other) = delete;
     /** \brief Move constructs a network_control instance
@@ -77,7 +82,8 @@ class network_control {
     static inline std::map<fs::path, bool> _lock_table;
     static inline std::mutex _lock_table_mutex;
     static inline constexpr char hostapd_path[] = "/usr/bin/hostapd";
-    static inline constexpr const char *const hostapd_argument = hostapd_default_conf_path;
+    static inline constexpr char const *hostapd_argument = hostapd_default_conf_path;
+    static inline constexpr char wpa_passphrase_allowed_chars[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890+-#!";
 
     fs::path m_config_path;
     std::map<std::string, std::string> m_values;

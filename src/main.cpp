@@ -19,6 +19,10 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
+    network->set_value("wpa_passphrase", network_control::random_password(8));
+    logger::get()->info("Passphrase : {}", *network->get_value("wpa_passphrase"));
+    network->apply_config();
+
     mounter.start();
 
     QApplication a(argc, argv);
