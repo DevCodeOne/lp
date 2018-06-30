@@ -121,7 +121,27 @@ void automounter::automounter_thread() {
                 logger::get()->info("Failed to mount {}", device_name);
             }
 
-            // TODO enter mount information in table so it can be deleted once the device gets unmounted
+            _mount_table[device_name] = mount_point;
+        } else if (action == "remove") {
+            auto mount_point = _mount_table.find(device_name);
+
+            if (mount_point == _mount_table.cend()) {
+                logger::get()->info("Device {} was not mounted by this program or is already unmounted", device_name);
+            } else {
+                int umount_result = umount(mount_point->second.c_str());
+
+                if (umount_result) {
+                    logger::get()->info("An error occured when trying to unmount device {}", device_name);
+                }
+
+                int remove_dir_result = rmdir(mount_point->second.c_str());
+
+                if (remove_dir_result) {
+                    logger::get()->info("An error occured when trying to delete the mount point {}", mount_point->second.c_str());
+                }
+
+                _mount_table.erase(device_name);
+            }
         }
     }
 }
