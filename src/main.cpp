@@ -1,10 +1,10 @@
 #include <cstdlib>
 
-#include <QApplication>
+#include <QCoreApplication>
 
+#include "automounter.h"
 #include "logger.h"
 #include "network.h"
-#include "automounter.h"
 #include "secondary_display.h"
 
 int main(int argc, char *argv[]) {
@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
 
     mounter.start();
 
-    QApplication a(argc, argv);
+    QCoreApplication a(argc, argv);
 
     secondary_display display(50);
 
