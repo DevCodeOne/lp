@@ -10,30 +10,31 @@ secondary_display::secondary_display(int refresh_rate)
       m_pixmap(16, 16),
       m_qrwidget("Hello World fjdslfgsdjfsdklgsdj"),
       m_button("TestButton", nullptr) {
-    auto display = dispmanx_display::open_display(dispmanx_display::ids::FORCE_LCD);
+    auto display = bcm_host_wrapper::dispmanx_display::open_display(
+        bcm_host_wrapper::dispmanx_display_ids::FORCE_LCD);
 
     if (!display) {
         logger::get()->critical("Couldn't open display");
         return;
     }
 
-    m_display = std::make_unique<dispmanx_display>(std::move(*display));
-    dispmanx_modeinfo mode = m_display->current_mode();
+    m_display = std::make_unique<bcm_host_wrapper::dispmanx_display>(std::move(*display));
+    bcm_host_wrapper::dispmanx_modeinfo mode = m_display->current_mode();
 
     setMinimumSize(QSize(mode.width(), mode.height()));
     showFullScreen();
 
     logger::get()->info("modeinfo : width={}, height={}", mode.width(), mode.height());
-    auto resource =
-        dispmanx_resource::create_resource(VC_IMAGE_RGBA32, mode.width(), mode.height());
-    m_pixmap = dispmanx_pixmap<int32_t>(mode.width(), mode.height());
+    auto resource = bcm_host_wrapper::dispmanx_resource::create_resource(
+        VC_IMAGE_RGBA32, mode.width(), mode.height());
+    m_pixmap = bcm_host_wrapper::dispmanx_pixmap<int32_t>(mode.width(), mode.height());
 
     if (!resource) {
         logger::get()->critical("Couldn't create resource");
         return;
     }
 
-    m_resource = std::make_unique<dispmanx_resource>(std::move(*resource));
+    m_resource = std::make_unique<bcm_host_wrapper::dispmanx_resource>(std::move(*resource));
     m_button.setMaximumHeight(40);
     m_button.setMaximumWidth(200);
 
@@ -63,7 +64,7 @@ void secondary_display::timerEvent(QTimerEvent *) { update_display(); }
 
 void secondary_display::update_display() {
     if (m_update_needed) {
-        dispmanx_rect rect(m_resource->dimensions());
+        bcm_host_wrapper::dispmanx_rect rect(m_resource->dimensions());
 
         auto screen_contents = pixels();
 
@@ -83,16 +84,19 @@ void secondary_display::update_display() {
         auto dimensions = m_resource->dimensions();
         if (!m_element) {
             auto element_handle = update->add_element(
-                2000, dimensions, *m_resource, dimensions, dispmanx_protection::NONE,
-                dispmanx_alpha(DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS, 255, nullptr),
-                dispmanx_clamp(), dispmanx_transform());
+                2000, dimensions, *m_resource, dimensions,
+                bcm_host_wrapper::dispmanx_protection::NONE,
+                bcm_host_wrapper::dispmanx_alpha(
+                    bcm_host_wrapper::dispmanx_alpha_flags::fixed_all_pixels, 255, nullptr),
+                bcm_host_wrapper::dispmanx_clamp(), bcm_host_wrapper::dispmanx_transform());
 
             if (!element_handle) {
                 logger::get()->critical("Couldn't add element to update");
                 return;
             }
 
-            m_element = std::make_unique<dispmanx_element_handle>(std::move(*element_handle));
+            m_element = std::make_unique<bcm_host_wrapper::dispmanx_element_handle>(
+                std::move(*element_handle));
         }
 
         update->change_element_source(*m_element, *m_resource);

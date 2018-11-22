@@ -1,6 +1,3 @@
-[submodule "external/spdlog"]
-	path = external/spdlog
-	url = https://github.com/gabime/spdlog
 [submodule "udevpp"]
 	path = udevpp
 	url = https://github.com/DevCodeOne/udevpp

@@ -11,7 +11,7 @@ qrwidget::qrwidget(const std::string &message) : m_message(message) {
     setMaximumHeight(m_side_length * square_size);
 }
 
-void qrwidget::paintEvent(QPaintEvent *event) {
+void qrwidget::paintEvent([[maybe_unused]] QPaintEvent *event) {
     QPainter painter(this);
     painter.fillRect(0, 0, width(), height(),
                      QBrush(QColor("white"), Qt::BrushStyle::SolidPattern));

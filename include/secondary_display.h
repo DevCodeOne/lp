@@ -5,7 +5,7 @@
 #include <QPushButton>
 #include <QTabWidget>
 
-#include "dispmanx.h"
+#include "dispmanx/dispmanx_wrapper.h"
 #include "qrwidget.h"
 
 /** \brief This class controls the secondary display, which is by default the Raspberry Pi LCD
@@ -37,15 +37,15 @@ class secondary_display : public QTabWidget {
      */
     void timerEvent(QTimerEvent *event);
 
-    std::unique_ptr<dispmanx_display> m_display = nullptr;
+    std::unique_ptr<bcm_host_wrapper::dispmanx_display> m_display = nullptr;
     /** \brief Resource which will be displayed on the screen.
      * This resource will contain the pixels from the screenshot of the gui.
      */
-    std::unique_ptr<dispmanx_resource> m_resource = nullptr;
+    std::unique_ptr<bcm_host_wrapper::dispmanx_resource> m_resource = nullptr;
     /** \brief This is an handle to an element which is added to an update.
      * It will display the resource attacted to it.
      */
-    std::unique_ptr<dispmanx_element_handle> m_element = nullptr;
+    std::unique_ptr<bcm_host_wrapper::dispmanx_element_handle> m_element = nullptr;
     /** \brief This variable will be true when the contents of the screen and the gui differ.
      * It will indicate if the dispmanx_pixmap has to be copied to the screen.
      */
@@ -55,7 +55,7 @@ class secondary_display : public QTabWidget {
     bool m_is_grabbing = false;
     /** \brief The buffer in which the screenshot will be stored in.
      */
-    dispmanx_pixmap<int32_t> m_pixmap;
+    bcm_host_wrapper::dispmanx_pixmap<int32_t> m_pixmap;
     qrwidget m_qrwidget;
     QPushButton m_button;
 };

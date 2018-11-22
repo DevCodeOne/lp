@@ -1,6 +1,8 @@
 #include <cstdlib>
 
-#include <QCoreApplication>
+#include <QApplication>
+
+#include "bcm_host_wrapper.h"
 
 #include "automounter.h"
 #include "logger.h"
@@ -9,7 +11,7 @@
 
 int main(int argc, char *argv[]) {
     auto logger = logger::get();
-    bcm_host::initialize();
+    auto bcm_lib_instance = bcm_host_wrapper::bcm_host::instance();
 
     automounter mounter;
     auto network = network_control::open_control(network_control::hostapd_default_conf_path);
@@ -25,7 +27,7 @@ int main(int argc, char *argv[]) {
 
     mounter.start();
 
-    QCoreApplication a(argc, argv);
+    QApplication a(argc, argv);
 
     secondary_display display(50);
 
